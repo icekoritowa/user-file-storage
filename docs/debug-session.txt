@@ -1,0 +1,40 @@
+Фактическая отладка граничного случая: файл 20 МиБ, занято 80 МиБ, квота 100 МиБ.
+
+Ошибка: < вместо <=
+> /private/tmp/pr1-qa/main_bug.py(1)<module>()
+-> """ПР1: моделирование загрузки пользовательского файла в папку."""
+(Pdb) Breakpoint 1 at /private/tmp/pr1-qa/main_bug.py:20
+(Pdb) Система хранения пользовательских файлов
+Дата: 2026-10-28
+Пользователь: ilya; файл: practice1.pdf
+Размер: 20.00 МиБ
+> /private/tmp/pr1-qa/main_bug.py(20)has_space()
+-> return used_space + file_size < quota
+(Pdb) 20971520
+(Pdb) 83886080
+(Pdb) 104857600
+(Pdb) 104857600
+(Pdb) --Return--
+> /private/tmp/pr1-qa/main_bug.py(20)has_space()->False
+-> return used_space + file_size < quota
+(Pdb) False
+(Pdb) 
+Исправлено: <=
+> /private/tmp/pr1-qa/main_fixed.py(1)<module>()
+-> """ПР1: моделирование загрузки пользовательского файла в папку."""
+(Pdb) Breakpoint 1 at /private/tmp/pr1-qa/main_fixed.py:20
+(Pdb) Система хранения пользовательских файлов
+Дата: 2026-10-28
+Пользователь: ilya; файл: practice1.pdf
+Размер: 20.00 МиБ
+> /private/tmp/pr1-qa/main_fixed.py(20)has_space()
+-> return used_space + file_size <= quota
+(Pdb) 20971520
+(Pdb) 83886080
+(Pdb) 104857600
+(Pdb) 104857600
+(Pdb) --Return--
+> /private/tmp/pr1-qa/main_fixed.py(20)has_space()->True
+-> return used_space + file_size <= quota
+(Pdb) True
+(Pdb) 
