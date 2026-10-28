@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from main import MIB, can_write, has_space, upload_file
+from file_storage.rules import MIB, can_write, has_space, upload_file
 
 
 @pytest.mark.parametrize("user,owner,access,expected", [
@@ -69,7 +69,9 @@ def test_quota_denied():
 
 def test_demo_runs():
     project = Path(__file__).resolve().parents[1]
-    result = subprocess.run([sys.executable, str(project / "main.py")],
-                            capture_output=True, text=True, check=True)
+    result = subprocess.run(
+        [sys.executable, str(project / "main.py"), "--demo"],
+        capture_output=True, text=True, check=True,
+    )
     assert "7.50 МиБ" in result.stdout
     assert result.stdout.count("Отказ:") == 2

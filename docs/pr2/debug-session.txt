@@ -1,0 +1,28 @@
+> /private/tmp/pr2_debug.py(1)<module>()
+-> from file_storage.catalog import (empty_catalog, add_user, add_folder,
+(Pdb) Breakpoint 1 at /Users/skytimeline/.codex/visualizations/2026/10/28/01a1828f-08a1-7683-91b1-ab59495c0c17/user-file-storage/file_storage/catalog.py:78
+(Pdb) > /Users/skytimeline/.codex/visualizations/2026/10/28/01a1828f-08a1-7683-91b1-ab59495c0c17/user-file-storage/file_storage/catalog.py(78)check_access()
+-> if entry["user_id"] == user_id and entry["folder_id"] == folder_id:
+(Pdb) 2
+(Pdb) 1
+(Pdb) {'user_id': 2, 'folder_id': 1, 'level': 'read'}
+(Pdb) > /Users/skytimeline/.codex/visualizations/2026/10/28/01a1828f-08a1-7683-91b1-ab59495c0c17/user-file-storage/file_storage/catalog.py(79)check_access()
+-> access = entry["level"]
+(Pdb) ''
+(Pdb) > /Users/skytimeline/.codex/visualizations/2026/10/28/01a1828f-08a1-7683-91b1-ab59495c0c17/user-file-storage/file_storage/catalog.py(80)check_access()
+-> break
+(Pdb) > /Users/skytimeline/.codex/visualizations/2026/10/28/01a1828f-08a1-7683-91b1-ab59495c0c17/user-file-storage/file_storage/catalog.py(81)check_access()
+-> if write:
+(Pdb) False
+(Pdb) Чтение: True
+> /Users/skytimeline/.codex/visualizations/2026/10/28/01a1828f-08a1-7683-91b1-ab59495c0c17/user-file-storage/file_storage/catalog.py(78)check_access()
+-> if entry["user_id"] == user_id and entry["folder_id"] == folder_id:
+(Pdb) {'user_id': 2, 'folder_id': 1, 'level': 'read'}
+(Pdb) > /Users/skytimeline/.codex/visualizations/2026/10/28/01a1828f-08a1-7683-91b1-ab59495c0c17/user-file-storage/file_storage/catalog.py(79)check_access()
+-> access = entry["level"]
+(Pdb) ''
+(Pdb) Запись: False
+The program finished and will be restarted
+> /private/tmp/pr2_debug.py(1)<module>()
+-> from file_storage.catalog import (empty_catalog, add_user, add_folder,
+(Pdb) 
