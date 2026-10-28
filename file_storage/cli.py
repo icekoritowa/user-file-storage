@@ -1,6 +1,5 @@
-"""Консольное меню с обработкой ошибок ввода и сохранения."""
-
 import argparse
+import inspect
 from copy import deepcopy
 from pathlib import Path
 
@@ -19,20 +18,17 @@ MENU = """
 
 
 def number(prompt: str) -> int:
-    """Преобразовать ввод; ValueError обрабатывается циклом меню."""
     return int(input(prompt))
 
 
-def show(records: list[dict]) -> None:
-    """Напечатать записи коллекции или сообщение о пустом результате."""
+def show(records: list) -> None:
     if not records:
         print("Ничего не найдено.")
     for record in records:
-        print(" | ".join(f"{key}: {value}" for key, value in record.items()))
+        print(record)
 
 
 def command(data: dict, user_id: int, choice: str) -> bool:
-    """Выполнить команду и сообщить, изменились ли данные."""
     if choice == "1":
         show(data["users"])
     elif choice == "2":
@@ -40,7 +36,7 @@ def command(data: dict, user_id: int, choice: str) -> bool:
         return True
     elif choice == "4":
         show([folder for folder in data["folders"]
-              if catalog.check_access(data, user_id, folder["id"])])
+              if catalog.check_access(data, user_id, folder.id)])
     elif choice == "5":
         catalog.add_folder(data, user_id, input("Имя папки: "))
         return True
@@ -56,7 +52,7 @@ def command(data: dict, user_id: int, choice: str) -> bool:
         name = input("Имя файла: ")
         record = catalog.add_file(data, user_id, folder_id, name,
                                   number("Размер в байтах: "))
-        print(f"Добавлен файл ID {record['id']} (сохранение следует далее).")
+        print(f"Добавлен файл ID {record.id} (сохранение следует далее).")
         return True
     elif choice == "8":
         catalog.delete_file(data, user_id, number("ID файла: "))
@@ -70,28 +66,27 @@ def command(data: dict, user_id: int, choice: str) -> bool:
     elif choice == "10":
         user = catalog.get_record(data, "users", user_id)
         used = catalog.used_space(data, user_id)
-        print(f"Занято {used} из {user['quota']} байт. "
-              f"Свободно {user['quota'] - used}.")
+        print(f"Занято {used} из {user.quota} байт. "
+              f"Свободно {user.quota - used}.")
     elif choice == "11":
         name = input("Имя функции каталога: ")
         function = getattr(catalog, name, None)
         if name.startswith("_") or not callable(function):
             raise ValueError("Функция не найдена.")
-        print(function.__doc__)
+        print(f"{name}{inspect.signature(function)}")
     else:
         raise ValueError("Неизвестный пункт меню.")
     return False
 
 
 def run(path: Path) -> None:
-    """Загрузить каталог и сохранять успешные изменения после команд."""
     try:
         data = load_catalog(path)
     except (OSError, ValueError) as error:
         print(f"Ошибка загрузки: {error}. Исходный файл не изменён.")
         return
-    current_user = data["users"][0]["id"] if data["users"] else 0
-    print("Система хранения пользовательских файлов — ПР2")
+    current_user = data["users"][0].id if data["users"] else 0
+    print("Система хранения пользовательских файлов — ПР3")
     try:
         while True:
             print(f"Текущий пользователь: {current_user}", MENU)
@@ -104,13 +99,13 @@ def run(path: Path) -> None:
                     catalog.get_record(data, "users", new_user)
                     current_user = new_user
                     continue
-                # Не менять рабочее состояние, пока запись на диск не удалась.
+
                 candidate = deepcopy(data)
                 if command(candidate, current_user, choice):
                     save_catalog(path, candidate)
                     data = candidate
                     if not current_user:
-                        current_user = data["users"][0]["id"]
+                        current_user = data["users"][0].id
                     print("Изменения сохранены.")
             except (ValueError, OSError) as error:
                 print(f"Ошибка: {error}")
@@ -119,8 +114,9 @@ def run(path: Path) -> None:
 
 
 def main() -> None:
-    """Прочитать параметры запуска и выбрать меню или демонстрацию ПР1."""
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description="Система хранения пользовательских файлов",
+    )
     parser.add_argument("--data", type=Path, default=Path("data/catalog.json"))
     parser.add_argument("--demo", action="store_true", help="Сценарий ПР1")
     args = parser.parse_args()

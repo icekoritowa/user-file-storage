@@ -1,5 +1,3 @@
-"""Точка входа консольного приложения."""
-
 from file_storage.cli import main
 
 

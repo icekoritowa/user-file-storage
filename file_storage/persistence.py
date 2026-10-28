@@ -1,16 +1,15 @@
-"""Проверка структуры JSON, загрузка и атомарное сохранение каталога."""
-
 import json
 import os
 import tempfile
 from datetime import date
 from pathlib import Path
 
-from .catalog import COLLECTIONS, empty_catalog, nonnegative, valid_name
+from .catalog import COLLECTIONS, Catalog, empty_catalog
+from .models import Access, File, Folder, User
+from .validation import nonnegative, valid_name
 
 
-def validate_catalog(data: dict) -> None:
-    """Отвергнуть повреждённую структуру и нарушенные связи до записи."""
+def validate_payload(data: dict) -> None:
     if not isinstance(data, dict) or set(data) != set(COLLECTIONS):
         raise ValueError("Ожидаются users, folders, files, accesses.")
     for name in COLLECTIONS:
@@ -73,20 +72,56 @@ def validate_catalog(data: dict) -> None:
         raise ValueError("Неверные поля JSON.") from error
 
 
-def load_catalog(path: Path) -> dict:
-    """Загрузить JSON; только отсутствие файла означает новый каталог."""
+def from_data(payload: dict) -> Catalog:
+    validate_payload(payload)
+    users = {row["id"]: User.from_dict(row) for row in payload["users"]}
+    folders = {row["id"]: Folder.from_dict(row, users)
+               for row in payload["folders"]}
+    return {"users": list(users.values()), "folders": list(folders.values()),
+            "files": [File.from_dict(row, folders)
+                      for row in payload["files"]],
+            "accesses": [Access.from_dict(row, users, folders)
+                         for row in payload["accesses"]]}
+
+
+def to_data(data: Catalog) -> dict:
+    if not isinstance(data, dict) or set(data) != set(COLLECTIONS):
+        raise ValueError("Неверная структура каталога.")
+    types = (User, Folder, File, Access)
+    for name, entity_type in zip(COLLECTIONS, types):
+        if not isinstance(data[name], list) or any(
+            not isinstance(item, entity_type) for item in data[name]
+        ):
+            raise ValueError(f"Неверные объекты в {name}.")
+    users = {u.id: u for u in data["users"]}
+    folders = {f.id: f for f in data["folders"]}
+    for folder in data["folders"]:
+        if users.get(folder.owner.id) is not folder.owner:
+            raise ValueError("Папка ссылается на посторонний объект User.")
+    for record in data["files"]:
+        if folders.get(record.folder.id) is not record.folder:
+            raise ValueError("Файл ссылается на посторонний объект Folder.")
+    for access in data["accesses"]:
+        if (users.get(access.user.id) is not access.user
+                or folders.get(access.folder.id) is not access.folder):
+            raise ValueError("Доступ ссылается на посторонние объекты.")
+    payload = {name: [record.to_dict() for record in data[name]]
+               for name in COLLECTIONS}
+    validate_payload(payload)
+    return payload
+
+
+def load_catalog(path: Path) -> Catalog:
     try:
         with path.open(encoding="utf-8") as stream:
-            data = json.load(stream)
+            payload = json.load(stream)
     except FileNotFoundError:
         return empty_catalog()
-    validate_catalog(data)
-    return data
+    return from_data(payload)
 
 
-def save_catalog(path: Path, data: dict) -> None:
-    """Сохранить через временный файл, сохранив старый при ошибке записи."""
-    validate_catalog(data)
+def save_catalog(path: Path, data: Catalog) -> None:
+    payload = to_data(data)
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = None
     try:
@@ -94,7 +129,7 @@ def save_catalog(path: Path, data: dict) -> None:
             mode="w", encoding="utf-8", dir=path.parent, delete=False,
         ) as stream:
             temporary = Path(stream.name)
-            json.dump(data, stream, ensure_ascii=False, indent=2)
+            json.dump(payload, stream, ensure_ascii=False, indent=2)
             stream.write("\n")
         os.replace(temporary, path)
     finally:

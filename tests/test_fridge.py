@@ -1,5 +1,3 @@
-"""Партии, точное количество, сроки и JSON упражнения Холодильник."""
-
 from datetime import date
 from decimal import Decimal
 

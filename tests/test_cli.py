@@ -1,5 +1,3 @@
-"""Проверка меню на подготовленном вводе, включая ошибки и перезапуск."""
-
 import subprocess
 import sys
 from pathlib import Path
@@ -28,12 +26,12 @@ def test_every_menu_item_and_restart(tmp_path):
     ])
     assert "Ошибка: Нет права записи" in output
     assert "Занято 80 из 100" in output
-    assert "Развить сценарий ПР1" in output
+    assert "add_file(data:" in output
     data = load_catalog(path)
     assert len(data["users"]) == 2
     assert len(data["folders"]) == 1
     assert data["files"] == []
-    assert data["accesses"][0]["level"] == "read"
+    assert data["accesses"][0].level == "read"
     output = run_cli(path, ["1", "4", "6", "", "", "", "0"])
     assert "ilya" in output and "Учеба" in output
     assert "Ничего не найдено" in output

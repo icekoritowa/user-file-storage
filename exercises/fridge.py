@@ -1,5 +1,3 @@
-"""Холодильник: партии продуктов, количества, срок годности и JSON."""
-
 import json
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -8,7 +6,6 @@ from pathlib import Path
 
 def add(goods: dict, title: str, amount: str,
         expiration_date: str | None = None) -> None:
-    """Добавить партию; количество хранится строкой для точного JSON."""
     title = title.strip()
     if not title:
         raise ValueError("Название продукта не должно быть пустым.")
@@ -25,18 +22,15 @@ def add(goods: dict, title: str, amount: str,
 
 
 def find(goods: dict, query: str) -> list[str]:
-    """Найти названия продуктов без учёта регистра."""
     return [name for name in goods if query.casefold() in name.casefold()]
 
 
 def amount(goods: dict, query: str) -> Decimal:
-    """Суммировать количества найденных продуктов и всех их партий."""
     return sum((Decimal(batch["amount"]) for name in find(goods, query)
                 for batch in goods[name]), Decimal("0"))
 
 
 def expired(goods: dict, on_date: date) -> list[tuple[str, Decimal]]:
-    """Найти партии, срок которых истёк до указанного дня."""
     result = []
     for title, batches in goods.items():
         quantity = Decimal("0")
@@ -50,13 +44,11 @@ def expired(goods: dict, on_date: date) -> list[tuple[str, Decimal]]:
 
 
 def save(goods: dict, path: Path) -> None:
-    """Сохранить учебный словарь продуктов в UTF-8 JSON."""
     with path.open("w", encoding="utf-8") as stream:
         json.dump(goods, stream, ensure_ascii=False, indent=2)
 
 
 def load(path: Path) -> dict:
-    """Восстановить и проверить партии через функцию добавления."""
     with path.open(encoding="utf-8") as stream:
         raw = json.load(stream)
     if not isinstance(raw, dict):
@@ -74,7 +66,6 @@ def load(path: Path) -> dict:
 
 
 def main() -> None:
-    """Продемонстрировать учёт нескольких партий и поиск просрочки."""
     goods = {}
     add(goods, "Молоко", "1.5", "2026-10-27")
     add(goods, "Молоко", "0.5", "2026-10-30")

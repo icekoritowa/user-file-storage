@@ -1,5 +1,3 @@
-"""Проверки прав, квоты и законченного сценария загрузки."""
-
 import subprocess
 import sys
 from pathlib import Path

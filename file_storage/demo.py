@@ -1,12 +1,9 @@
-"""Исходный сценарий ПР1."""
-
 from datetime import date
 
 from .rules import MIB, upload_file
 
 
 def main() -> None:
-    """Показать успешную загрузку и два варианта отказа."""
     user_name = "ilya"
     owner_name = "ilya"
     folder_name = "Учеба"

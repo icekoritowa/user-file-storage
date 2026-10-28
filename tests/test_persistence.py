@@ -1,5 +1,3 @@
-"""Сохранность данных при перезапуске и ошибках файлов."""
-
 import json
 from copy import deepcopy
 
@@ -22,7 +20,7 @@ def test_roundtrip_and_missing(tmp_path):
     assert p.load_catalog(path) == c.empty_catalog()
     data = sample()
     p.save_catalog(path, data)
-    assert p.load_catalog(path) == data
+    assert p.to_data(p.load_catalog(path)) == p.to_data(data)
     assert "Илья" in path.read_text()
     c.delete_file(data, 1, 1)
     p.save_catalog(path, data)
@@ -50,7 +48,7 @@ def test_invalid_json_is_not_replaced(tmp_path, text):
     lambda d: d["folders"][0].pop("owner_id"),
 ])
 def test_schema_validation(tmp_path, change):
-    data = deepcopy(sample())
+    data = p.to_data(sample())
     change(data)
     path = tmp_path / "bad.json"
     path.write_text(json.dumps(data))
@@ -71,5 +69,5 @@ def test_write_failure_keeps_old_file(tmp_path, monkeypatch):
     monkeypatch.setattr(p.os, "replace", fail)
     with pytest.raises(OSError):
         p.save_catalog(path, changed)
-    assert p.load_catalog(path) == original
+    assert p.to_data(p.load_catalog(path)) == p.to_data(original)
     assert len(list(tmp_path.iterdir())) == 1
