@@ -1,0 +1,5 @@
+{% if access.level == "write" %}
+    <span class="access-level access-write">write — чтение и запись</span>
+{% else %}
+    <span class="access-level access-read">read — только чтение</span>
+{% endif %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Доступ: {{ access.user.name }} — {{ access.folder.name }}{% endblock %}
+{% block content %}
+    <h1>Право доступа</h1>
+    <dl>
+        <dt>Получатель</dt><dd>{{ access.user.name }}</dd>
+        <dt>Папка</dt><dd><a href="{% url 'library:folder_detail' access.folder.id %}">{{ access.folder.name }}</a></dd>
+        <dt>Владелец папки</dt><dd>{{ access.folder.owner.name }}</dd>
+        <dt>Уровень</dt><dd>{% include "permissions/includes/access_level.html" %}</dd>
+    </dl>
+    {% if access.level == "write" %}
+        <p>Пользователь может просматривать, добавлять и удалять файлы папки.</p>
+    {% else %}
+        <p>Пользователь может просматривать файлы папки.</p>
+    {% endif %}
+    <a href="{% url 'permissions:accesses' %}">Назад к правам доступа</a>
+{% endblock %}

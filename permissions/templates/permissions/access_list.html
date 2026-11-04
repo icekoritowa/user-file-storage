@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Права доступа{% endblock %}
+{% block content %}
+    <h1>Права доступа</h1>
+    <p>read — чтение; write — чтение, добавление и удаление. Владелец всегда имеет полный доступ к своей папке.</p>
+    <p>Всего выданных прав: {{ accesses|length }}</p>
+    {% for access in accesses %}
+        <article class="access-card">
+            <h2><a href="{% url 'permissions:access_detail' access.folder.id access.user.id %}">{{ access.user.name }} — {{ access.folder.name }}</a></h2>
+            {% include "permissions/includes/access_level.html" %}
+            <p><a href="{% url 'library:folder_detail' access.folder.id %}">Открыть папку</a></p>
+        </article>
+    {% empty %}
+        <p>Дополнительные права пока не выданы.</p>
+    {% endfor %}
+{% endblock %}

@@ -20,4 +20,4 @@ if ! .venv-web/bin/python -c 'import django; assert django.VERSION[:2] == (5, 2)
     .venv-web/bin/python -m pip install -r requirements.txt
 fi
 .venv-web/bin/python manage.py check
-exec .venv-web/bin/python manage.py runserver 127.0.0.1:8000
+exec .venv-web/bin/python manage.py runserver 127.0.0.1:8000 --insecure

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+    <h1>Система хранения пользовательских файлов</h1>
+    <p class="lead">Папки, файлы и права доступа в одном каталоге.</p>
+    <p>Хранятся сведения о файлах: имя, размер, дата и владелец.</p>
+    <div class="summary-grid">
+        <div class="summary-card"><strong>{{ users|length }}</strong> пользователей</div>
+        <a class="summary-card" href="{% url 'library:folders' %}"><strong>{{ folders|length }}</strong> папок</a>
+        <a class="summary-card" href="{% url 'library:files' %}"><strong>{{ files|length }}</strong> файлов</a>
+        <a class="summary-card" href="{% url 'permissions:accesses' %}"><strong>{{ accesses|length }}</strong> прав доступа</a>
+    </div>
+    {% if not users %}
+        <p>Каталог пуст. Добавьте первого пользователя в консольном приложении.</p>
+    {% endif %}
+{% endblock %}

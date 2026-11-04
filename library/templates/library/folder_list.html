@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Папки{% endblock %}
+{% block content %}
+    <h1>Папки</h1>
+    <p>Всего папок: {{ folders|length }}</p>
+    <div class="folder-grid">
+        {% for folder in folders %}
+            {% include "library/includes/folder_card.html" %}
+        {% empty %}
+            <p>Папок пока нет.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

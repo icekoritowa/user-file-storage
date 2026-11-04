@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ folder.name }}{% endblock %}
+{% block content %}
+    <h1>{{ folder.name }}</h1>
+    <p>Владелец: {{ folder.owner.name }}</p>
+    <p>Во всех папках владельца занято {{ used }} из {{ folder.owner.quota }} байт. Свободно: {{ free }} байт.</p>
+    <h2>Файлы папки</h2>
+    <p>Всего файлов: {{ files|length }}</p>
+    {% include "library/includes/file_table.html" %}
+    <a href="{% url 'library:folders' %}">Назад к папкам</a>
+{% endblock %}

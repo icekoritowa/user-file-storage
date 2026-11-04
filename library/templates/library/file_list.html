@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Файлы{% endblock %}
+{% block content %}
+    <h1>Файлы</h1>
+    <p>Всего файлов: {{ files|length }}</p>
+    {% include "library/includes/file_table.html" %}
+{% endblock %}

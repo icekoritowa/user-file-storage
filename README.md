@@ -6,11 +6,12 @@
 
 Репозиторий: https://github.com/icekoritowa/user-file-storage
 
-## ПР5 — веб-приложение на Django
+## ПР6 — шаблоны Django и статические файлы
 
-Добавлен веб-слой Django 5.2.x. Классы, JSON и консольное приложение ПР3 продолжают
-работать. Веб-страницы показывают каталог; формы, вход пользователей, шаблоны Django
-и ORM будут добавлены в следующих работах. Сейчас это локальный учебный просмотр
+Веб-слой Django 5.2.x из ПР5 переведён на Django Template Language (DTL).
+Классы, JSON и консольное приложение ПР3 продолжают работать. Веб-страницы
+показывают каталог; формы, вход пользователей, ORM и база данных остаются
+для следующих работ. Сейчас это локальный учебный просмотр
 всего каталога, включая сведения о правах, без проверки личности посетителя.
 
 ### Быстрый запуск на Mac
@@ -40,7 +41,7 @@ source .venv-web/bin/activate
 python -m pip install -r requirements.txt -r requirements-dev.txt
 python -m django --version
 python manage.py check
-python manage.py runserver
+python manage.py runserver 127.0.0.1:8000 --insecure
 python -m pytest -q
 python -m flake8
 ```
@@ -58,24 +59,73 @@ python -m flake8
 | `/files/` | Список файлов | library.views.files |
 | `/files/<int:file_id>/` | Имя, размер, дата, папка и владелец | library.views.file_detail |
 | `/accesses/` | Выданные права read/write | permissions.views.accesses |
+| `/accesses/<int:folder_id>/<int:user_id>/` | Право пользователя на папку | permissions.views.access_detail |
 
 `manage.py` — команды Django. `storage_web/settings.py` — настройки,
 `storage_web/urls.py` распределяет URL через include. Приложения homepage, library
 и permissions зарегистрированы в INSTALLED_APPS; у каждого собственные apps.py,
 urls.py и views.py. Файлы wsgi.py/asgi.py содержат точки входа сервера.
 Отдельное приложение пользователей пока не требуется: данные User отображаются
-через владельцев папок и получателей доступа. Моделей ORM и базы данных на ПР5 нет.
+через владельцев папок и получателей доступа. Моделей ORM и базы данных на ПР6 нет.
 
 ### От JSON к HTTP-ответу
 
 Запрос → корневой URLconf → URLconf приложения → view → загрузка JSON прежней
-функцией load_catalog → объекты User/Folder/File/Access → HTML → HttpResponse.
-Поиск деталей использует get_record; неизвестный ID вызывает Http404.
-Общая page(title, content) формирует HTML-документ, навигацию, CSS и подключение
-Bootstrap 5.3.3 через CDN. Используются container, table, list-group, display-5,
-lead, text-muted и другие классы. Собственные стили оставляют страницы читаемыми
-без CDN; Bootstrap требует интернета. Данные из JSON экранируются перед вставкой в HTML.
-Шаблоны и render намеренно оставлены для следующей практики, как в методичке.
+функцией load_catalog → объекты User/Folder/File/Access → context → render → шаблон → HTTP-ответ.
+Поиск деталей файла и папки использует get_record; неизвестный ID вызывает Http404.
+У Access нет отдельного ID: право определяется парой «папка + пользователь».
+Если такого права нет или оно отозвано, страница возвращает 404.
+
+HTML полностью вынесен из Python в шаблоны. Функции page(), link() и модуль
+homepage/layout.py удалены. Общие структура, стили, скрипт и подвал находятся
+в templates/base.html. Страницы наследуют его через extends и переопределяют
+блоки title/content. Навигация, карточка папки, таблица файлов и уровень доступа
+подключаются через include. Данные по умолчанию экранируются Django.
+
+### Шаблоны и оформление
+
+```text
+templates/
+  base.html
+  404.html
+  503.html
+  includes/navigation.html
+homepage/
+  templates/homepage/index.html
+  static/homepage/
+    css/style.css
+    js/main.js
+    img/logo.svg
+library/templates/library/
+  folder_list.html
+  folder_detail.html
+  file_list.html
+  file_detail.html
+  includes/folder_card.html
+  includes/file_table.html
+permissions/templates/permissions/
+  access_list.html
+  access_detail.html
+  includes/access_level.html
+```
+
+В settings.py настроены DIRS, APP_DIRS, STATIC_URL и django.contrib.staticfiles.
+Дочерние шаблоны получают объекты в словаре контекста; расчёт свободной квоты
+и выбор файлов папки остаются в Python. for/empty выводит коллекции и сообщения
+для пустых данных; if выбирает содержимое таблицы и вид уровня read/write.
+Фильтры length показывают количество, default задаёт запасное название,
+date форматирует дату как день.месяц.год, filesizeformat — размер файла.
+Все внутренние переходы используют url и пространства имён homepage/library/permissions.
+
+Собственный CSS оформляет карточки, таблицы, права и мобильную версию.
+SVG-логотип, CSS и JavaScript подключаются через static. JavaScript выводит год
+и переключает светлую/тёмную тему кнопкой в шапке. Выбор действует до перезагрузки
+страницы. Bootstrap 5.3.3 загружается с CDN, собственные стили работают и без интернета.
+
+Для локальной демонстрации при DEBUG=False скрипт run_web.sh передаёт runserver
+параметр --insecure, чтобы Django отдавал CSS, JS и логотип, сохраняя собственную
+страницу 404. Сервер слушает только 127.0.0.1; этот режим предназначен для разработки.
+[Документация Django по статическим файлам](https://docs.djangoproject.com/en/5.2/howto/static-files/).
 
 По умолчанию используется `data/catalog.json`, созданный консольной программой.
 Если его нет, показывается `data/example.json` без копирования и записи. Пустой
@@ -83,7 +133,7 @@ lead, text-muted и другие классы. Собственные стили
 Путь можно задать переменной окружения STORAGE_CATALOG:
 
 ```bash
-STORAGE_CATALOG=/полный/путь/catalog.json python manage.py runserver
+STORAGE_CATALOG=/полный/путь/catalog.json python manage.py runserver 127.0.0.1:8000 --insecure
 ```
 
 Каждый запрос перечитывает JSON: сохранённые изменения консольной версии видны
@@ -97,8 +147,10 @@ DEBUG по умолчанию False, ALLOWED_HOSTS разрешает localhost 
 отладки запустить с DJANGO_DEBUG=1. SECRET_KEY имеет локальное учебное значение;
 для будущего развёртывания предусмотрена переменная DJANGO_SECRET_KEY.
 
-Результаты проверки и чек-лист: [docs/pr5/verification.md](docs/pr5/verification.md).
-Все коммиты этого этапа начинаются с `PR5:`. Отчёт ПР5 пока не создавался.
+Результаты ПР6 и порядок показа: [docs/pr6/verification.md](docs/pr6/verification.md).
+Исходная контрольная точка — коммит ПР5 `8be7392`, перед изменениями проходили
+111 тестов. Коммит текущего этапа начинается с `PR6:`. Отчёт пока не создавался.
+[Проверки предыдущей ПР5](docs/pr5/verification.md) сохранены как история этапа.
 
 ## Назначение и целевая аудитория
 

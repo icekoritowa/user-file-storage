@@ -119,3 +119,95 @@ def test_url_names_and_converter():
 def test_disallowed_host(web):
     client, _ = web
     assert client.get("/", HTTP_HOST="invalid.example").status_code == 400
+
+
+@pytest.mark.parametrize("level,label,description", [
+    ("read", "read — только чтение", "может просматривать файлы"),
+    ("write", "write — чтение и запись", "добавлять и удалять файлы"),
+])
+def test_access_details_and_revocation(web, level, label, description):
+    from file_storage.catalog import set_access
+    client, path = web
+    data = load_catalog(path)
+    add_user(data, "Гость", 1000)
+    set_access(data, 1, 1, 2, level)
+    save_catalog(path, data)
+    before = path.read_bytes()
+    listing = client.get("/accesses/").content.decode()
+    assert 'href="/accesses/1/2/"' in listing
+    assert label in listing
+    response = client.get("/accesses/1/2/")
+    assert response.status_code == 200
+    body = response.content.decode()
+    assert label in body and description in body
+    assert 'href="/folders/1/"' in body
+    assert "Гость" in body and "Илья" in body
+    assert client.head("/accesses/1/2/").status_code == 200
+    assert client.post("/accesses/1/2/", {}).status_code == 405
+    assert path.read_bytes() == before
+    set_access(data, 1, 1, 2, "none")
+    save_catalog(path, data)
+    assert client.get("/accesses/1/2/").status_code == 404
+
+
+@pytest.mark.parametrize("url", [
+    "/accesses/999/2/", "/accesses/1/999/", "/accesses/abc/2/",
+])
+def test_missing_access(web, url):
+    client, _ = web
+    response = client.get(url)
+    assert response.status_code == 404
+    assert "404 — страница не найдена" in response.content.decode()
+
+
+def test_folder_contents_and_template_formatting(web):
+    client, path = web
+    data = load_catalog(path)
+    add_folder(data, 1, "Пустая папка")
+    save_catalog(path, data)
+    item = data["files"][0]
+    body = client.get("/folders/1/").content.decode()
+    assert "Всего файлов: 1" in body
+    assert 'href="/files/1/"' in body
+    assert item.uploaded_at.strftime("%d.%m.%Y") in body
+    empty = client.get("/folders/2/").content.decode()
+    assert "Файлов пока нет" in empty
+    assert "практика.txt" not in empty
+    assert "Всего папок: 2" in client.get("/folders/").content.decode()
+
+
+def test_shared_templates_and_static_assets(web):
+    from django.contrib.staticfiles import finders
+    from django.test.utils import (
+        setup_test_environment, teardown_test_environment,
+    )
+    client, _ = web
+    setup_test_environment()
+    try:
+        response = client.get("/folders/")
+        names = {t.name for t in response.templates}
+        assert {
+            "base.html", "includes/navigation.html",
+            "library/folder_list.html", "library/includes/folder_card.html",
+        } <= names
+        assert response.context["folders"][0].name == "Учеба"
+    finally:
+        teardown_test_environment()
+    for asset in ["css/style.css", "js/main.js", "img/logo.svg"]:
+        assert finders.find("homepage/" + asset)
+        assert f'/static/homepage/{asset}' in response.content.decode()
+
+
+def test_escaping_in_folder_and_access_templates(web):
+    from file_storage.catalog import set_access
+    client, path = web
+    data = load_catalog(path)
+    name = '<img src=x onerror="alert(1)">'
+    add_user(data, name, 1000)
+    add_folder(data, 1, name)
+    set_access(data, 1, 2, 2, "write")
+    save_catalog(path, data)
+    for url in ["/folders/", "/folders/2/", "/accesses/", "/accesses/2/2/"]:
+        body = client.get(url).content.decode()
+        assert name not in body
+        assert "&lt;img src=x" in body

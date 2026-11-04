@@ -6,6 +6,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "local-pr5-development-key")
 DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
 INSTALLED_APPS = [
+    "django.contrib.staticfiles",
     "homepage.apps.HomepageConfig",
     "library.apps.LibraryConfig",
     "permissions.apps.PermissionsConfig",
@@ -17,7 +18,14 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 ROOT_URLCONF = "storage_web.urls"
-TEMPLATES = []
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+    },
+]
+STATIC_URL = "/static/"
 WSGI_APPLICATION = "storage_web.wsgi.application"
 ASGI_APPLICATION = "storage_web.asgi.application"
 LANGUAGE_CODE = "ru-ru"

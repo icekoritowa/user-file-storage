@@ -1,11 +1,10 @@
 from functools import wraps
 
 from django.conf import settings
-from django.http import HttpResponse
+from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
 from file_storage.persistence import load_catalog
-from .layout import page
 
 
 def catalog_view(view):
@@ -18,9 +17,6 @@ def catalog_view(view):
                 path = settings.EXAMPLE_PATH
             data = load_catalog(path)
         except (OSError, ValueError):
-            return HttpResponse(page("Ошибка чтения", (
-                '<h1>Каталог временно недоступен</h1>'
-                '<p>Не удалось прочитать данные. Проверьте JSON-файл.</p>'
-            )), status=503)
+            return render(request, "503.html", status=503)
         return view(request, data, *args, **kwargs)
     return wrapped

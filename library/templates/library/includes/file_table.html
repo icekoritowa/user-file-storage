@@ -1,0 +1,20 @@
+{% if files %}
+    <div class="table-scroll">
+        <table class="file-table">
+            <thead>
+                <tr><th scope="col">Файл</th><th scope="col">Размер</th><th scope="col">Дата загрузки</th></tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                    <tr>
+                        <td><a href="{% url 'library:file_detail' file.id %}">{{ file.name|default:"Без названия" }}</a></td>
+                        <td>{{ file.size|filesizeformat }}</td>
+                        <td>{{ file.uploaded_at|date:"d.m.Y" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>Файлов пока нет.</p>
+{% endif %}
