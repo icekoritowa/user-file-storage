@@ -9,3 +9,5 @@ htmlcov/
 .env
 .idea/
 data/catalog.json
+.venv-web/
+db.sqlite3
