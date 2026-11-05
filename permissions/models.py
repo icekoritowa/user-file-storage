@@ -2,35 +2,16 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
-class AccessQuerySet(models.QuerySet):
-    def readable(self):
-        return self.filter(level=Access.Level.READ)
-
-    def writable(self):
-        return self.filter(level=Access.Level.WRITE)
-
-    def with_names(self):
-        return self.select_related("user", "folder__owner")
-
-
 class Access(models.Model):
-    class Level(models.TextChoices):
-        READ = "read", "Чтение"
-        WRITE = "write", "Чтение и запись"
-
-    objects = AccessQuerySet.as_manager()
-
     user = models.ForeignKey("library.User", on_delete=models.CASCADE,
-                             related_name="accesses",
-                             verbose_name="Получатель")
+                             related_name="accesses")
     folder = models.ForeignKey("library.Folder", on_delete=models.CASCADE,
-                               related_name="accesses", verbose_name="Папка")
-    level = models.CharField("Уровень", max_length=5,
-                             choices=Level.choices, default=Level.READ)
+                               related_name="accesses")
+    level = models.CharField(max_length=5, choices=[
+        ("read", "Чтение"), ("write", "Чтение и запись"),
+    ], default="read")
 
     class Meta:
-        verbose_name = "Право доступа"
-        verbose_name_plural = "Права доступа"
         ordering = ["folder_id", "user_id"]
         constraints = [
             models.UniqueConstraint(fields=["user", "folder"],

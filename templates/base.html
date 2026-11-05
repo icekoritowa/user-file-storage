@@ -13,7 +13,7 @@
     <header class="site-header">
         <a class="brand" href="{% url 'homepage:index' %}">
             <img src="{% static 'homepage/img/logo.svg' %}" width="48" height="48" alt="Логотип файлового хранилища">
-            {{ site_name }}
+            Файловое хранилище
         </a>
         {% include "includes/navigation.html" %}
         <button id="theme-toggle" type="button" aria-pressed="false" hidden>Тёмная тема</button>
@@ -24,7 +24,7 @@
     <footer class="site-footer container">
         <p>© <span id="current-year">{% now "Y" %}</span> Файловое хранилище</p>
         <p>Огарков Илья Евгеньевич · ЭФБО-10-24</p>
-        <p>Каталог файлов и папок.</p>
+        <p>Учебный просмотр каталога. Вход пользователей пока не реализован.</p>
     </footer>
 </body>
 </html>

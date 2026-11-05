@@ -4,8 +4,6 @@ from . import views
 
 app_name = "library"
 urlpatterns = [
-    path("folders/by-name/<slug:slug>/", views.folder_slug,
-         name="folder_slug"),
     path("folders/", views.folders, name="folders"),
     path("folders/<int:folder_id>/", views.folder_detail,
          name="folder_detail"),

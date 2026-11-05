@@ -16,7 +16,7 @@ if [ ! -x .venv-web/bin/python ] || ! .venv-web/bin/python -c 'import sys; sys.e
     "$selected" -m venv .venv-web
 fi
 
-if ! .venv-web/bin/python -c 'import django; import debug_toolbar; assert django.VERSION[:2] == (5, 2)' 2>/dev/null; then
+if ! .venv-web/bin/python -c 'import django; assert django.VERSION[:2] == (5, 2)' 2>/dev/null; then
     .venv-web/bin/python -m pip install -r requirements.txt
 fi
 .venv-web/bin/python manage.py migrate --noinput
