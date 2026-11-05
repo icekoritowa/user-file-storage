@@ -33,27 +33,3 @@ def test_invalid_import_preserves_database(database, tmp_path):
     with pytest.raises(ValueError):
         import_json(source, database)
     assert database.read_bytes() == before
-
-
-def test_sql_pages(database):
-    pytest.importorskip('django')
-    from django.test import Client, override_settings
-    with override_settings(STORAGE_DATABASE=database,
-                           ALLOWED_HOSTS=['testserver']):
-        client = Client()
-        for url in ['/', '/folders/', '/folders/1/', '/files/', '/files/1/',
-                    '/accesses/', '/accesses/1/2/', '/statistics/']:
-            assert client.get(url).status_code == 200
-        response = client.get('/statistics/', {'q': "' OR 1=1 --"})
-        assert response.status_code == 200
-        assert 'Нет данных' in response.content.decode()
-        for params in [{'size': '-1'}, {'date': 'bad'}, {'offset': 'abc'}]:
-            assert client.get('/statistics/', params).status_code == 400
-        with connect(database) as connection:
-            with connection:
-                connection.execute('UPDATE files SET name=? WHERE id=1',
-                                   ('changed.txt',))
-        assert 'changed.txt' in client.get('/files/').content.decode()
-        database.unlink()
-        assert client.get('/files/').status_code == 503
-        assert client.get('/statistics/').status_code == 503

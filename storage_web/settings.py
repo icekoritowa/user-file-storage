@@ -40,3 +40,12 @@ EXAMPLE_PATH = BASE_DIR / "data" / "example.json"
 STORAGE_DATABASE = Path(os.environ.get(
     "STORAGE_DATABASE", str(BASE_DIR / "data/storage.sqlite"),
 ))
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.environ.get(
+            "DJANGO_DATABASE", str(BASE_DIR / "db.sqlite3"),
+        ),
+    },
+}

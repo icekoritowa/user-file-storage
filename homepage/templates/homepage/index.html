@@ -5,12 +5,12 @@
     <p class="lead">Папки, файлы и права доступа в одном каталоге.</p>
     <p>Хранятся сведения о файлах: имя, размер, дата и владелец.</p>
     <div class="summary-grid">
-        <div class="summary-card"><strong>{{ users|length }}</strong> пользователей</div>
-        <a class="summary-card" href="{% url 'library:folders' %}"><strong>{{ folders|length }}</strong> папок</a>
-        <a class="summary-card" href="{% url 'library:files' %}"><strong>{{ files|length }}</strong> файлов</a>
-        <a class="summary-card" href="{% url 'permissions:accesses' %}"><strong>{{ accesses|length }}</strong> прав доступа</a>
+        <div class="summary-card"><strong>{{ users_count }}</strong> пользователей</div>
+        <a class="summary-card" href="{% url 'library:folders' %}"><strong>{{ folders_count }}</strong> папок</a>
+        <a class="summary-card" href="{% url 'library:files' %}"><strong>{{ files_count }}</strong> файлов</a>
+        <a class="summary-card" href="{% url 'permissions:accesses' %}"><strong>{{ accesses_count }}</strong> прав доступа</a>
     </div>
-    {% if not users %}
+    {% if not users_count %}
         <p>Каталог пуст. Добавьте первого пользователя в консольном приложении.</p>
     {% endif %}
 {% endblock %}

@@ -2,6 +2,29 @@
 {% block title %}Файлы{% endblock %}
 {% block content %}
     <h1>Файлы</h1>
-    <p>Всего файлов: {{ files|length }}</p>
+    {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+    <form method="get">
+        <p><label>Поиск <input name="q" value="{{ filters.q }}"></label></p>
+        <p><label>ID папки <input type="number" name="folder" min="1" value="{{ filters.folder }}"></label></p>
+        <p><label>ID владельца <input type="number" name="owner" min="1" value="{{ filters.owner }}"></label></p>
+        <p><label>Размер до, байт <input type="number" name="size" min="0" value="{{ filters.size }}"></label></p>
+        <p><label>Дата до <input type="date" name="date" value="{{ filters.date }}"></label></p>
+        <p><label><input type="checkbox" name="nonempty" value="1" {% if filters.nonempty == '1' %}checked{% endif %}> Только непустые</label></p>
+        <p><label>Сортировка <select name="sort">
+            <option value="name" {% if filters.sort == 'name' %}selected{% endif %}>По имени</option>
+            <option value="size" {% if filters.sort == 'size' %}selected{% endif %}>По размеру</option>
+            <option value="date" {% if filters.sort == 'date' %}selected{% endif %}>По дате</option>
+            <option value="owner" {% if filters.sort == 'owner' %}selected{% endif %}>По владельцу</option>
+        </select></label></p>
+        <button type="submit">Найти</button>
+    </form>
+    <p>На странице: {{ files|length }}</p>
     {% include "library/includes/file_table.html" %}
+    {% if page_obj %}
+        <nav aria-label="Страницы">
+            {% if page_obj.has_previous %}<a href="?{{ query }}&amp;page={{ page_obj.previous_page_number }}">Назад</a>{% endif %}
+            <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }} · Всего: {{ page_obj.paginator.count }}</span>
+            {% if page_obj.has_next %}<a href="?{{ query }}&amp;page={{ page_obj.next_page_number }}">Далее</a>{% endif %}
+        </nav>
+    {% endif %}
 {% endblock %}

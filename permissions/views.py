@@ -1,23 +1,20 @@
-from django.http import Http404, HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
-from homepage.data import catalog_view
+from homepage.data import database_view
+from .models import Access
 
 
-@catalog_view
-def accesses(request: HttpRequest, data: dict) -> HttpResponse:
+@database_view
+def accesses(request):
     return render(request, "permissions/access_list.html", {
-        "accesses": data["accesses"],
+        "accesses": Access.objects.select_related("user", "folder"),
     })
 
 
-@catalog_view
-def access_detail(request: HttpRequest, data: dict,
-                  folder_id: int, user_id: int) -> HttpResponse:
-    access = next((a for a in data["accesses"]
-                   if a.folder.id == folder_id and a.user.id == user_id), None)
-    if access is None:
-        raise Http404("Право доступа не найдено")
+@database_view
+def access_detail(request, folder_id, user_id):
     return render(request, "permissions/access_detail.html", {
-        "access": access,
+        "access": get_object_or_404(Access.objects.select_related(
+            "user", "folder__owner",
+        ), folder_id=folder_id, user_id=user_id),
     })

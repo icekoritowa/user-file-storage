@@ -19,5 +19,7 @@ fi
 if ! .venv-web/bin/python -c 'import django; assert django.VERSION[:2] == (5, 2)' 2>/dev/null; then
     .venv-web/bin/python -m pip install -r requirements.txt
 fi
+.venv-web/bin/python manage.py migrate --noinput
+.venv-web/bin/python manage.py import_legacy --if-empty
 .venv-web/bin/python manage.py check
 exec .venv-web/bin/python manage.py runserver 127.0.0.1:8000 --insecure
