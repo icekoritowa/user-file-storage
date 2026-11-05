@@ -59,7 +59,7 @@ def statistics(request):
             uploaded_at__lte=values["date"],
         ).order_by("-size", "pk").values()[offset:offset + 20],
             ["name", "size", "uploaded_at"]),
-        section("Права записи", Access.objects.filter(level="write").values(),
+        section("Права записи", Access.objects.writable().values(),
                 ["user_id", "folder_id"]),
         section("Файлы и владельцы", File.objects.values(
             "name", "folder__name", "folder__owner__name",

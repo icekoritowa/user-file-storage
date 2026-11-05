@@ -10,7 +10,7 @@ def allowed(folder, actor_id, write=False):
         return True
     rights = Access.objects.filter(folder=folder, user_id=actor_id)
     if write:
-        rights = rights.filter(level="write")
+        rights = rights.writable()
     return rights.exists()
 
 

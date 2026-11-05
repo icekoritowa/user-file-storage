@@ -38,7 +38,7 @@ def folder_detail(request, folder_id):
 
 @database_view
 def files(request):
-    records = File.objects.select_related("folder__owner")
+    records = File.objects.with_owners()
     params = request.GET
     sort = params.get("sort", "name")
     try:
@@ -53,8 +53,8 @@ def files(request):
                     raise ValueError
                 records = records.filter(**{field: value})
         if params.get("date"):
-            records = records.filter(
-                uploaded_at__lte=date.fromisoformat(params["date"]),
+            records = records.uploaded_before(
+                date.fromisoformat(params["date"]),
             )
     except ValueError:
         return render(request, "library/file_list.html", {
@@ -67,7 +67,7 @@ def files(request):
             | Q(folder__owner__name__icontains=params["q"]),
         )
     if params.get("nonempty") == "1":
-        records = records.exclude(size=0)
+        records = records.nonempty()
     page = Paginator(records.order_by(*SORTS[sort]), 10).get_page(
         params.get("page"),
     )
@@ -83,6 +83,12 @@ def files(request):
 def file_detail(request, file_id):
     return render(request, "library/file_detail.html", {
         "file": get_object_or_404(
-            File.objects.select_related("folder__owner"), pk=file_id,
+            File.objects.with_owners(), pk=file_id,
         ),
     })
+
+
+@database_view
+def folder_slug(request, slug):
+    folder = get_object_or_404(Folder, slug=slug)
+    return folder_detail(request, folder.pk)

@@ -1,5 +1,5 @@
 <article class="folder-card">
-    <h2><a href="{% url 'library:folder_detail' folder.id %}">{{ folder.name|default:"Без названия" }}</a></h2>
+    <h2><a href="{{ folder.get_absolute_url }}">{{ folder.name|default:"Без названия" }}</a></h2>
     <p>ID: {{ folder.id }}</p>
     <p>Владелец: {{ folder.owner.name }}</p>
 </article>
