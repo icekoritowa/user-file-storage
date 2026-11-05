@@ -21,7 +21,8 @@ def web(tmp_path):
     add_file(data, 1, 1, "практика.txt", 200)
     path = tmp_path / "catalog.json"
     save_catalog(path, data)
-    with override_settings(CATALOG_PATH=path, DEBUG=False,
+    with override_settings(CATALOG_PATH=path, STORAGE_DATABASE=None,
+                           DEBUG=False,
                            ALLOWED_HOSTS=["testserver"]):
         yield Client(), path
 

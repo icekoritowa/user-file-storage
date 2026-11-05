@@ -36,3 +36,7 @@ CATALOG_PATH = Path(os.environ.get(
     "STORAGE_CATALOG", str(BASE_DIR / "data" / "catalog.json"),
 ))
 EXAMPLE_PATH = BASE_DIR / "data" / "example.json"
+
+STORAGE_DATABASE = Path(os.environ.get(
+    "STORAGE_DATABASE", str(BASE_DIR / "data/storage.sqlite"),
+))

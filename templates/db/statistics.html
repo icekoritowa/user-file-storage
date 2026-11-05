@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Поиск и статистика{% endblock %}
+{% block content %}
+<h1>Поиск и статистика</h1>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="get">
+    <p><label>Имя файла <input name="q" value="{{ q }}"></label></p>
+    <p><label>Размер файла до / свободное место от, байт <input type="number" name="size" min="0" value="{{ values.size|default:104857600 }}"></label></p>
+    <p><label>Загружен не позднее <input type="date" name="date" value="{{ values.date }}"></label></p>
+    <p><label>Пропустить файлов <input type="number" name="offset" min="0" value="{{ values.offset|default:0 }}"></label></p>
+    <p><label>Минимум файлов в папке <input type="number" name="minimum" min="0" value="{{ values.minimum|default:0 }}"></label></p>
+    <button type="submit">Найти</button>
+</form>
+{% for section in sections %}
+    <h2>{{ section.title }}</h2>
+    <div class="table-scroll"><table>
+        <thead><tr>{% for column in section.columns %}<th>{{ column }}</th>{% endfor %}</tr></thead>
+        <tbody>{% for row in section.rows %}<tr>{% for value in row %}<td>{{ value|default_if_none:"—" }}</td>{% endfor %}</tr>{% empty %}<tr><td>Нет данных</td></tr>{% endfor %}</tbody>
+    </table></div>
+{% endfor %}
+{% endblock %}
