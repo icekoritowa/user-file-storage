@@ -166,3 +166,43 @@ def test_dump_and_load(web, tmp_path):
     call_command("flush", interactive=False, verbosity=0)
     call_command("loaddata", str(target), verbosity=0)
     assert File.objects.get(pk=1).folder.owner.name == "ilya"
+
+
+@pytest.mark.parametrize("case", [
+    "negative_size", "negative_quota", "duplicate_file",
+    "duplicate_user", "invalid_level", "duplicate_access",
+])
+def test_database_constraints(web, case):
+    from django.db import IntegrityError, transaction
+    from library.models import File, User
+    from permissions.models import Access
+    with pytest.raises(IntegrityError), transaction.atomic():
+        if case == "negative_size":
+            File.objects.filter(pk=1).update(size=-1)
+        elif case == "negative_quota":
+            User.objects.filter(pk=1).update(quota=-1)
+        elif case == "duplicate_file":
+            file = File.objects.get(pk=1)
+            File.objects.create(name=file.name, folder=file.folder)
+        elif case == "duplicate_user":
+            User.objects.create(name=User.objects.get(pk=1).name.upper())
+        elif case == "invalid_level":
+            Access.objects.update(level="admin")
+        elif case == "duplicate_access":
+            access = Access.objects.first()
+            Access.objects.create(user=access.user, folder=access.folder)
+
+
+def test_profile_keeps_application_data(web):
+    import json
+    from django.core.management import call_command
+    from library.models import File, Folder, User
+    from permissions.models import Access
+    models = (User, Folder, File, Access)
+    before = [list(model.objects.values()) for model in models]
+    output = StringIO()
+    call_command("profile_indexes", stdout=output)
+    result = json.loads(output.getvalue())
+    assert result["rows"] == 50000
+    assert all(query["same_results"] for query in result["queries"].values())
+    assert [list(model.objects.values()) for model in models] == before

@@ -59,6 +59,11 @@ class File(NamedEntity):
 
     class Meta(NamedEntity.Meta):
         abstract = False
+        indexes = [
+            models.Index(fields=["folder", "-uploaded_at", "id"],
+                         name="file_folder_date_idx"),
+            models.Index(fields=["-size", "id"], name="file_size_id_idx"),
+        ]
         constraints = [
             models.UniqueConstraint(fields=["folder", "name"],
                                     name="unique_folder_file"),

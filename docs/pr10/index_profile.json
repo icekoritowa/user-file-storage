@@ -1,0 +1,39 @@
+{
+  "rows": 50000,
+  "repeats": 25,
+  "sqlite": "3.53.1",
+  "queries": {
+    "folder_date": {
+      "before": {
+        "plan": [
+          "SEARCH library_file USING INDEX library_file_folder_id_6426b698 (folder_id=?)",
+          "USE TEMP B-TREE FOR ORDER BY"
+        ],
+        "median_ms": 0.2817
+      },
+      "after": {
+        "plan": [
+          "SEARCH library_file USING INDEX file_folder_date_idx (folder_id=?)"
+        ],
+        "median_ms": 0.0024
+      },
+      "same_results": true
+    },
+    "size": {
+      "before": {
+        "plan": [
+          "SCAN library_file",
+          "USE TEMP B-TREE FOR ORDER BY"
+        ],
+        "median_ms": 0.9957
+      },
+      "after": {
+        "plan": [
+          "SEARCH library_file USING INDEX file_size_id_idx (size<?)"
+        ],
+        "median_ms": 0.0024
+      },
+      "same_results": true
+    }
+  }
+}
